@@ -279,7 +279,7 @@ public class JansUserRegistration extends NewUserRegistration {
     }
     
         
-    public String sendOTPCode(String phone, String lang) {
+    public String sendOTPCode(String phone, String lang, String verificationMethod) {
         try {
             logger.info("Sending OTP Code via SMS to phone: {}", phone);
 
@@ -302,7 +302,7 @@ public class JansUserRegistration extends NewUserRegistration {
 
             associateGeneratedCodeToPhone(phone, otpCode);
 
-            sendTwilioSms(phone, message);
+            sendTwilioSms(phone, message, verificationMethod);
 
             return phone;
         } catch (Exception ex) {
@@ -334,7 +334,7 @@ public class JansUserRegistration extends NewUserRegistration {
         }
     }
 
-    private boolean sendTwilioSms(String phone, String message) {
+    private boolean sendTwilioSms(String phone, String message, String verificationMethod) {
         try {
             // Determine which FROM_NUMBER to use based on country code
             String fromNumber = getFromNumberForPhone(phone);
@@ -343,7 +343,17 @@ public class JansUserRegistration extends NewUserRegistration {
                 logger.error("FROM_NUMBER is null or empty, cannot send OTP to {}", phone);
                 return false;
             }
-
+            boolean isWhatsApp = "whatsapp".equalsIgnoreCase(verificationMethod);
+            if (isWhatsApp) {
+                String whatsappFrom = flowConfig.get("FROM_NUMBER_WHATSAPP");
+            if (whatsappFrom != null && !whatsappFrom.trim().isEmpty()) {
+                fromNumber = whatsappFrom;
+                }
+            fromNumber = "whatsapp:" + fromNumber;
+            phone = "whatsapp:" + phone;
+            logger.info("Using WhatsApp channel for OTP delivery");
+                }
+                
             PhoneNumber FROM_NUMBER = new com.twilio.type.PhoneNumber(fromNumber);
 
             logger.info("Sending from: {}", fromNumber);
