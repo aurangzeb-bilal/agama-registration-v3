@@ -2063,6 +2063,11 @@
 							"variableTypeCheck": true,
 							"assignmentExpression": "\"Otp send to the registered mobile number\"",
 							"assignedVariableName": "uiFeedback.infoMessage"
+						},
+						{
+							"variableTypeCheck": true,
+							"assignmentExpression": "phoneInput.verificationMethod",
+							"assignedVariableName": "verificationMethod"
 						}
 					],
 					"nodeIcon": "material-symbols:equal",
@@ -2151,7 +2156,7 @@
 				"width": 170,
 				"height": 124
 			},
-			"selected": true,
+			"selected": false,
 			"dragging": false
 		},
 		{
@@ -2519,7 +2524,8 @@
 					"callType": "Call method on instance",
 					"arguments": [
 						"phone",
-						"lang"
+						"lang",
+						"verificationMethod"
 					],
 					"nodeIcon": "material-symbols:code",
 					"nodeColor": "",
@@ -2591,7 +2597,8 @@
 					"arguments": [
 						"userRegistrationService",
 						"phone",
-						"lang"
+						"lang",
+						"verificationMethod"
 					],
 					"asssignedVariableName": "otpFeedBack",
 					"exceptionVariableField": "",
@@ -2608,7 +2615,7 @@
 				"width": 170,
 				"height": 124
 			},
-			"selected": false
+			"selected": true
 		},
 		{
 			"id": "logNode-a45cffd6-0c96-443f-a58b-5a559e00b6bc",
@@ -4619,7 +4626,8 @@
 				"fillOpacity": 0.7
 			},
 			"labelShowBg": true,
-			"sourceHandle": "source_repeatNode-5fba5aae-4392-4ecc-ab5b-2d30cfc85e5e_repeat"
+			"sourceHandle": "source_repeatNode-5fba5aae-4392-4ecc-ab5b-2d30cfc85e5e_repeat",
+			"selected": false
 		},
 		{
 			"source": "rrfNode-5b72820b-35ed-4155-bd08-b74ef5da7f6e",
@@ -5474,8 +5482,8 @@
 		}
 	],
 	"viewport": {
-		"x": -2605.283230498865,
-		"y": -504.41124048276447,
-		"zoom": 0.5
+		"x": -7886.238944980538,
+		"y": -1970.7303997207023,
+		"zoom": 1.1810609897054622
 	}
 }
