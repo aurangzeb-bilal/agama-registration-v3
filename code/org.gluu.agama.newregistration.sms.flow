@@ -1,0 +1,186 @@
+// User Registration Techniques
+Flow org.gluu.agama.newregistration.sms
+     Basepath ""
+     Timeout 300000 seconds
+     Configs conf
+// Create  variable for UCreate  variable for UI feedbackI feedback
+uiFeedback = {}
+emailObj = {}
+sendMail = true
+uiInput = {matches: true, resent: false}
+uiFeedback.errorMessage = ""
+// Iterate x times max
+Repeat 6 times max
+     // Retrieve user profile  from UI
+     userInput = RRF "profile.ftlh" uiFeedback
+     // create an instance of Registration service
+     userRegistrationService = Call org.gluu.agama.newuser.NewUserRegistration#getInstance conf
+     // Assign userName, email and password  to a variable
+     email = userInput.mail
+     userName = userInput.uid
+     userPassword = userInput.userPassword
+     residenceCountry = userInput.residenceCountry
+     referralCode = userInput.referralCode
+     lang = userInput.lang
+     // Validate user inputs
+     validation = Call userRegistrationService validateInputs userInput
+     // Validation result log
+     Log "@info Validation result:  % , % , %" validation validation.valid validation.message
+     // If successfully validate
+     When validation.valid is true
+          // Check user already exist or not with mail
+          user = Call userRegistrationService getUserEntityByMail email
+          // If user not found
+          When user.empty is true
+               // Check user already exist or not with username
+               userWithUid = Call userRegistrationService getUserEntityByUsername userName
+               // user not found
+               When userWithUid.empty is true
+                    // sent Email otp
+                    otpCode = Call userRegistrationService sendEmail email lang
+                    Log "@info OTP generated and send to: " email
+                    // EmailOtpValidationResult
+                    EmailOtpValidationResult = false
+                    uiFeedback.infoMessage = "OTP send to the registered email"
+                    resendCount = 0
+                    validationAttempts = 0
+                    EmailMax = Repeat 20 times max
+                         // "Email OTP verification loop Started"
+                         Log "@info Email OTP verification loop Started"
+                         // uiFeedback.email/matches
+                         uiFeedback.email = email
+                         uiFeedback.matches = true
+                         //  Show UI to collect OTP code from user.
+                         emailOtpCreds = RRF "otp.ftlh" uiFeedback
+                         When emailOtpCreds.resend is "yes"
+                              Log "@info User has requested a new code."
+                              When resendCount is 3
+                                   Log "@info Fail to resend new code to user. " otpCode
+                                   it_emailresend = {success: false, error: "ExceededResendAttempts"}
+                                   Finish it_emailresend
+                              // Increment resend counter
+                              resendCount = Call org.gluu.agama.newregistration.CounterHelper#increment resendCount
+                              // Log code resend
+                              Log "@info Resend attempt number: " resendCount
+                              // Resend Email otp
+                              otpCode = Call userRegistrationService sendEmail email lang
+                              When otpCode is null
+                                   Log "@info Fail to resend new code to user. " email
+                                   // "Error occurs while sending new code to you. Please contact site administrator."
+                                   uiFeedback.errorMessage = "Error occurs while sending new code to you. Please contact site administrator."
+                                   uiFeedback.infoMessage = ""
+                                   isResending = true
+                              // Log code resend
+                              Log "@info New OTP code send successfully!" otpCode
+                              // A new OTP code has been send to you on your Email
+                              uiFeedback.infoMessage = "A new OTP code has been send to you on your Email"
+                              uiFeedback.errorMessage = ""
+                              isResending = true
+                         Otherwise
+                              // "OTP provided by the user " 
+                              Log "@info OTP provided by the user " emailOtpCreds
+                              // validationAttempts
+                              validationAttempts = Call org.gluu.agama.newregistration.CounterHelper#increment validationAttempts
+                              // Add log entry withvalidation result in log file.
+                              Log "@info Validation attempt number: " validationAttempts
+                              // Check validation
+                              When validationAttempts is 4
+                                   // Log validation exceeded
+                                   Log "@info Maximum validation attempts exceeded"
+                                   it_emailotpmax = { success: false, error: "ExceededTheNumberOfAttemptsAllowed" }
+                                   Finish it_emailotpmax
+                              Otherwise
+                                   // "After the validationAttempts loop"
+                                   Log "@info After the validationAttempts loop"
+                                   When emailOtpCreds.passcode is otpCode
+                                        Log "@info Email Otp Verified"
+                                        EmailOtpValidationResult = true
+                                        Log "@info E-mail verification passed, initiating user provisioning flow " userInput
+                                        // Call user registration service method to register a new user
+                                        inum | E = Call userRegistrationService addNewUser userInput
+                                        // If user registration success
+                                        When inum is not null
+                                             // Show user creation log
+                                             Log "@info User % has been created" inum
+                                             // "User Account created successfully!"
+                                             uiFeedback.infoMessage = "User Account created successfully!"
+                                             sendemailStatus = Call userRegistrationService sendAccountCreationNotificationEmail email userName lang
+                                             Log "@info Email send to to the user" email userName lang 
+                                             ValidMobileNum = Repeat 5 times max
+                                                  //  Show UI to collect Mobile number from user.
+                                                  phoneInput = RRF "InputMobileNumber.ftlh" uiFeedback
+                                                  // Get the mobile number
+                                                  phone = phoneInput.phoneNumber
+                                                  uiFeedback.infoMessage = "Otp send to the registered mobile number"
+                                                  // "Check phone number for user +++++++:" phone lang
+                                                  Log "@info Check phone number for user +++++++:" phone  userName
+                                                  UniqueNumber = Call userRegistrationService isPhoneUnique userName phone
+                                                  When UniqueNumber is true
+                                                       // sent sms otp
+                                                       smsOtpSend = Call userRegistrationService sendOTPCode phone lang
+                                                       // The OTP Code has been send to user.
+                                                       Log "@info OTP generated and send to: " phone
+                                                       // Launch OTP Subflow
+                                                       otpFeedBack = Trigger org.gluu.agama.newregistration.verifysmsotp userRegistrationService phone lang
+                                                       // OTP Code validation is completed.
+                                                       Log "@info OTP Code validation completed with status: " otpFeedBack
+                                                       // Check if OTP validation vas okay
+                                                       When otpFeedBack.success is true
+                                                            phoneVerified = Call userRegistrationService markPhoneAsVerified userName phone
+                                                            // Show acknowledgement UI page for successful registration
+                                                            acknowledgementInput = RRF "acknowledgement.ftlh" 
+                                                            // Finish the flow successfully
+                                                            Log "@info Finish the flow successfully"
+                                                            Finish userName
+                                                       Otherwise
+                                                            // "ExceededResendAttempts"
+                                                            When otpFeedBack.error is "ExceededResendAttempts"
+                                                                 // "Resend attempts exceeded in OTP flow"
+                                                                 Log "@info Resend attempts exceeded in OTP flow"
+                                                                 Finish otpFeedBack
+                                                            // Check if OTP attempts exceeded
+                                                            When otpFeedBack.error is "ExceededTheNumberOfAttemptsAllowed"
+                                                                 Log "@info OTP validation attempts exceeded"
+                                                                 Finish otpFeedBack
+                                                            uiFeedback.errorMessage = "Please try again with a different mobile number."
+                                                  Otherwise
+                                                       // "This phone is already used by another account. Please enter a different one.
+                                                       Log "@error This phone number already exists and is assigned to another account."
+                                                       uiFeedback.errorMessage = "This phone is already used by another account. Please enter a different one."
+                                                       uiFeedback.infoMessage = "Please enter a new number"
+                                             // "Phone loop completed"
+                                             Log "@info Phone loop completed"
+                                             // ExceededTheNumberOfAttemptsAllowed
+                                             it_ValidMobileNum = { success: false, error: "ExceededTheNumberOfAttemptsAllowed" }
+                                             Finish it_ValidMobileNum
+                                        // Registration failed log
+                                        Log "@info User registration failed. Error : %" E
+                                   Otherwise
+                                        // Invalid OTP
+                                        Log "@info Invalid OTP, Please Try Again!"
+                                        // "Invalid OTP, Please Try Again!"
+                                        uiFeedback.errorMessage = "Invalid OTP, Please Try Again!"
+                                        uiFeedback.infoMessage = ""
+                    uiFeedback.errorMessage = "You have reached the maximun email OTP verification"
+                    // Email OTP verification loop completed
+                    Log "@info Email OTP verification loop completed"
+                    it_hdcpg = {success:false, error: "User update flow reached max attempts. Try later"}
+                    Finish it_hdcpg
+               Otherwise
+                    // User already registered with UID
+                    Log "@info User already registered with uid: %" userName
+                    // User already registered with UID
+                    uiFeedback.errorMessage = "User already registered with this UserName"
+          Otherwise
+               // User already registered with mail
+               Log "@info User already registered with mail: %" email
+               // User already Registered
+               uiFeedback.errorMessage = "User already Registered with this mail"
+     Otherwise
+          // Validate message 
+          uiFeedback.errorMessage = validation.message
+// Maximum attempt reached
+Log "@info Maximum attempt reached"
+// User Registration flow failed
+it_djwhr = {success:false, error: "User registration flow reached max attempts try later"}
+Finish it_djwhr

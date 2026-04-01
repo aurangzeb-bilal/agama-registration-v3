@@ -1,0 +1,30 @@
+{
+    "projectName": "agama-registration-v2",
+    "description": "Designing an Agama Flow for seamless user registration with validation and authentication.",
+    "type": "community",
+    "author": "phiwallet",
+    "version": "1.0.18",
+    "authorWebsite": "https://github.com/GluuFederation/agama-registration",
+    "githubUri": "https://github.com/GluuFederation/agama-registration",
+    "license": "apache-2.0",
+    "lastUpdated": "1739300950582",
+    "tags": [
+        "jans",
+        "community",
+        "authentication"
+    ],
+    "noDirectLaunch": [],
+    "configs": {
+        "org.gluu.agama.newregistration.sms": {
+            "ACCOUNT_SID": "PUT_YOUR_TWILIO_ACCOUNT_SID_HERE",
+            "AUTH_TOKEN": "PUT_YOUR_TWILIO_AUTH_TOKEN_HERE",
+            "FROM_NUMBER": "PUT_YOUR_TWILIO_FROM_NUMBER_HERE",
+            "FROM_NUMBER_US": "PUT_US_SENDER_NUMBER_HERE",
+            "FROM_NUMBER_RESTRICTED_COUNTRIES": "PUT_RESTRICTED_SENDER_NUMBER_HERE",
+            "US_COUNTRY_CODES": "PUT_US_COUNTRY_CODES_HERE",
+            "RESTRICTED_COUNTRY_CODES": "PUT_RESTRICTED_CODES_HERE"
+        },
+        "org.gluu.agama.newregistration.verifysmsotp": {}
+    },
+    "name": "agama-registration-v2"
+}
