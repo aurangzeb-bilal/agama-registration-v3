@@ -18,7 +18,9 @@ public abstract class NewUserRegistration {
 
     public abstract String sendEmail(String to, String lang);
 
-    public abstract String sendOTPCode(String phone, String lang);
+    // public abstract String sendOTPCode(String phone, String lang);
+    public abstract String sendOTPCode(String phone, String lang, String verificationMethod);
+
 
     public abstract boolean validateOTPCode(String phone, String code);
 

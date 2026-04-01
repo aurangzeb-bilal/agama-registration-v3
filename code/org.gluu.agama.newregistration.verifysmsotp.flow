@@ -2,7 +2,7 @@
 Flow org.gluu.agama.newregistration.verifysmsotp
      Basepath ""
      Timeout 900 seconds
-     Inputs userRegistrationService phone lang
+     Inputs userRegistrationService phone lang verificationMethod
 // Log flow imputs provided by the flow caller.
 Log "@info Information received from the caller: " phone lang
 otpUiFeedback = {}
@@ -12,8 +12,8 @@ maxSMS = Repeat 20 times max
      //  Show UI to collect OTP code from user.
      otpCreds = RRF "smsOtp.ftlh" otpUiFeedback
      When otpCreds.changenumber is "yes"
-          it_uyznx = {success:false, error: "Your error message here"}
-          Finish it_uyznx
+          it_jdvjq = {success:false, error: "Your error message here"}
+          Finish it_jdvjq
      Otherwise
           When otpCreds.hasRequestedNewCode is "yes"
                // Log new code request
@@ -28,7 +28,7 @@ maxSMS = Repeat 20 times max
                // Resend attempt number
                Log "@info Resend attempt number: " resendCount
                // Resend otp
-               resendHasSucceed = Call userRegistrationService sendOTPCode phone lang
+               resendHasSucceed = Call userRegistrationService sendOTPCode phone lang verificationMethod
                When resendHasSucceed is null
                     // Fail to resend new code to user.
                     Log "@info Fail to resend new code to user. " resendHasSucceed

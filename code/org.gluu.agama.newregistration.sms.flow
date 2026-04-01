@@ -112,16 +112,17 @@ Repeat 6 times max
                                                   // Get the mobile number
                                                   phone = phoneInput.phoneNumber
                                                   uiFeedback.infoMessage = "Otp send to the registered mobile number"
+                                                  verificationMethod = phoneInput.verificationMethod
                                                   // "Check phone number for user +++++++:" phone lang
                                                   Log "@info Check phone number for user +++++++:" phone  userName
                                                   UniqueNumber = Call userRegistrationService isPhoneUnique userName phone
                                                   When UniqueNumber is true
                                                        // sent sms otp
-                                                       smsOtpSend = Call userRegistrationService sendOTPCode phone lang
+                                                       smsOtpSend = Call userRegistrationService sendOTPCode phone lang verificationMethod
                                                        // The OTP Code has been send to user.
                                                        Log "@info OTP generated and send to: " phone
                                                        // Launch OTP Subflow
-                                                       otpFeedBack = Trigger org.gluu.agama.newregistration.verifysmsotp userRegistrationService phone lang
+                                                       otpFeedBack = Trigger org.gluu.agama.newregistration.verifysmsotp userRegistrationService phone lang verificationMethod
                                                        // OTP Code validation is completed.
                                                        Log "@info OTP Code validation completed with status: " otpFeedBack
                                                        // Check if OTP validation vas okay
@@ -164,8 +165,8 @@ Repeat 6 times max
                     uiFeedback.errorMessage = "You have reached the maximun email OTP verification"
                     // Email OTP verification loop completed
                     Log "@info Email OTP verification loop completed"
-                    it_hdcpg = {success:false, error: "User update flow reached max attempts. Try later"}
-                    Finish it_hdcpg
+                    it_aawni = {success:false, error: "User update flow reached max attempts. Try later"}
+                    Finish it_aawni
                Otherwise
                     // User already registered with UID
                     Log "@info User already registered with uid: %" userName
@@ -182,5 +183,5 @@ Repeat 6 times max
 // Maximum attempt reached
 Log "@info Maximum attempt reached"
 // User Registration flow failed
-it_djwhr = {success:false, error: "User registration flow reached max attempts try later"}
-Finish it_djwhr
+it_wotxv = {success:false, error: "User registration flow reached max attempts try later"}
+Finish it_wotxv
