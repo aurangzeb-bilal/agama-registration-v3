@@ -1,11 +1,11 @@
 {
-    "projectName": "agama-registration-v2",
+    "projectName": "agama-registration-v3",
     "description": "Designing an Agama Flow for seamless user registration with validation and authentication.",
-    "type": "community",
+    "type": "",
     "author": "phiwallet",
-    "version": "1.0.18",
-    "authorWebsite": "https://github.com/GluuFederation/agama-registration",
-    "githubUri": "https://github.com/GluuFederation/agama-registration",
+    "version": "3.0",
+    "authorWebsite": "",
+    "githubUri": "",
     "license": "apache-2.0",
     "lastUpdated": "1739300950582",
     "tags": [
@@ -27,5 +27,5 @@
         },
         "org.gluu.agama.newregistration.verifysmsotp": {}
     },
-    "name": "agama-registration-v2"
+    "name": "agama-registration-v3"
 }
