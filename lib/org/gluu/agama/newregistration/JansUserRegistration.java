@@ -428,10 +428,12 @@ public class JansUserRegistration extends NewUserRegistration {
                     (accountSid + ":" + authToken).getBytes(java.nio.charset.StandardCharsets.UTF_8)
                 );
 
-                String formBody = "To=" + java.net.URLEncoder.encode(phone, "UTF-8")
-                    + "&From=" + java.net.URLEncoder.encode(fromNumber, "UTF-8")
-                    + "&ContentSid=" + java.net.URLEncoder.encode(contentSid, "UTF-8")
-                    + "&ContentVariables=" + java.net.URLEncoder.encode("{\"1\":\"" + otpCode + "\"}", "UTF-8");
+                String encodedTo = java.net.URLEncoder.encode(phone, "UTF-8");
+                String encodedFrom = java.net.URLEncoder.encode(fromNumber, "UTF-8");
+                String encodedSid = java.net.URLEncoder.encode(contentSid, "UTF-8");
+                String encodedVars = java.net.URLEncoder.encode("{\"1\":\"" + otpCode + "\"}", "UTF-8");
+                String formBody = "To=" + encodedTo + "&From=" + encodedFrom + "&ContentSid=" + encodedSid + "&ContentVariables=" + encodedVars;
+
 
                 HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"))
