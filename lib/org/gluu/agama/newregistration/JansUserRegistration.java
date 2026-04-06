@@ -302,7 +302,8 @@ public class JansUserRegistration extends NewUserRegistration {
 
             associateGeneratedCodeToPhone(phone, otpCode);
 
-            sendTwilioSms(phone, message, verificationMethod);
+           // sendTwilioSms(phone, message, verificationMethod);
+            sendTwilioSms(phone, message, verificationMethod, otpCode, preferredLang);
 
             return phone;
         } catch (Exception ex) {
@@ -334,7 +335,8 @@ public class JansUserRegistration extends NewUserRegistration {
         }
     }
 
-    private boolean sendTwilioSms(String phone, String message, String verificationMethod) {
+ //   private boolean sendTwilioSms(String phone, String message, String verificationMethod) {
+    private boolean sendTwilioSms(String phone, String message, String verificationMethod, String otpCode, String lang) {
         try {
             // Determine which FROM_NUMBER to use based on country code
             String fromNumber = getFromNumberForPhone(phone);
@@ -364,7 +366,21 @@ public class JansUserRegistration extends NewUserRegistration {
 
             Twilio.init(flowConfig.get("ACCOUNT_SID"), flowConfig.get("AUTH_TOKEN"));
 
-            Message.creator(TO_NUMBER, FROM_NUMBER, message).create();
+           // Message.creator(TO_NUMBER, FROM_NUMBER, message).create();
+            if (isWhatsApp) {
+                String contentSid = getWhatsAppContentSid(lang);
+                if (contentSid != null && !contentSid.trim().isEmpty()) {
+                    Message.creator(TO_NUMBER, FROM_NUMBER, "")
+                    .setContentSid(contentSid)
+                    .setContentVariables("{\"1\":\"" + otpCode + "\"}")
+                    .create();
+    } else {
+        logger.error("No WhatsApp content SID found for language: {}", lang);
+        return false;
+    }
+} else {
+    Message.creator(TO_NUMBER, FROM_NUMBER, message).create();
+}
 
             logger.info("OTP code has been successfully sent to {}", phone);
 
@@ -373,6 +389,15 @@ public class JansUserRegistration extends NewUserRegistration {
             logger.error("Error sending OTP code to {}: {}", phone, exception.getMessage(), exception);
             return false;
         }
+    }
+    private String getWhatsAppContentSid(String lang) {
+        String suffix = (lang != null && !lang.isEmpty()) ? lang.toUpperCase() : "EN";
+        String sid = flowConfig.get("WHATSAPP_CONTENT_SID_" + suffix);
+        if (sid == null || sid.trim().isEmpty()) {
+            logger.info("No WhatsApp SID for language {}, falling back to EN", suffix);
+            sid = flowConfig.get("WHATSAPP_CONTENT_SID_EN");
+        }
+        return sid;
     }
 
     /**
